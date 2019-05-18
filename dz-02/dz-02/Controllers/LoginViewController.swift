@@ -9,16 +9,11 @@
 import UIKit
 import PureLayout
 
-/// Class which presents view controller for Login interface.
+/// Class which presents view controller for login interface.
 class LoginViewController: UIViewController {
     
-    /// Login url.
-    private static let loginUrl = "https://iosquiz.herokuapp.com/api/session"
-    /// Error message.
-    private static let errorMessage = "Incorrect username and/or password!"
-    
-    /// Central fields container.
-    @IBOutlet weak var fieldsContainer: UIView!
+    /// Central views container.
+    @IBOutlet weak var viewsContainer: UIView!
     /// Username text field.
     @IBOutlet weak var usernameField: UITextField!
     /// Password text field.
@@ -35,10 +30,13 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
 
         setUpGUI()
-        setUpKeyboard()
+        addKeyboardObservers()
     }
     
-    /// Tries to establish session with provided username and password.
+    /**
+     Tries to establish session with username and password currently stored
+     as values in *usernameField* and *passwordField*.
+    */
     @IBAction func loginTapped() {
         guard let username = usernameField.text,
               let password = passwordField.text else {
@@ -46,23 +44,28 @@ class LoginViewController: UIViewController {
         }
         
         LoginService().establishSession(
-            urlString: LoginViewController.loginUrl,
             username: username,
             password: password)
             { [weak self] (userId, token) in
                 if let userId = userId,
                    let token = token {
+                    
                     UserDefaults.standard.set(userId, forKey: "userId")
                     UserDefaults.standard.set(token, forKey: "token")
+                    
                     DispatchQueue.main.async {
                         self?.infoLabel.isHidden = true
+                        
+                        let appDelegate = UIApplication.shared.delegate as? AppDelegate
+                        appDelegate?.window?.rootViewController = UINavigationController(
+                            rootViewController: QuizzesViewController(quizzesViewModel: QuizzesViewModel())
+                        )
                     }
-                    
+    
                 } else {
                     DispatchQueue.main.async {
                         self?.passwordField.text = ""
                         self?.infoLabel.isHidden = false
-                        self?.infoLabel.text = LoginViewController.errorMessage
                     }
                 }
             }
@@ -72,7 +75,7 @@ class LoginViewController: UIViewController {
     private func setUpGUI() {
         containerCenterXConstraint =
             NSLayoutConstraint(
-                item: fieldsContainer,
+                item: viewsContainer,
                 attribute: .centerY,
                 relatedBy: .equal,
                 toItem: self.view,
@@ -82,26 +85,26 @@ class LoginViewController: UIViewController {
             )
         self.view.addConstraint(containerCenterXConstraint)
         
-        fieldsContainer.autoAlignAxis(.vertical, toSameAxisOf: self.view)
-        fieldsContainer.autoPinEdge(.leading, to: .leading, of: self.view, withOffset: 40.0)
-        fieldsContainer.autoPinEdge(.trailing, to: .trailing, of: self.view, withOffset: -40.0)
+        viewsContainer.autoAlignAxis(.vertical, toSameAxisOf: self.view)
+        viewsContainer.autoPinEdge(.leading, to: .leading, of: self.view, withOffset: 40.0)
+        viewsContainer.autoPinEdge(.trailing, to: .trailing, of: self.view, withOffset: -40.0)
         
         let defaultFont = UIFont.init(name: "Avenir-Book", size: 25.0)
         
         usernameField.font = defaultFont
         usernameField.placeholder = "Username"
         
-        usernameField.autoPinEdge(.leading, to: .leading, of: fieldsContainer, withOffset: 0.0)
-        usernameField.autoPinEdge(.trailing, to: .trailing, of: fieldsContainer, withOffset: 0.0)
-        usernameField.autoPinEdge(.top, to: .top, of: fieldsContainer, withOffset: 20.0)
+        usernameField.autoPinEdge(.leading, to: .leading, of: viewsContainer)
+        usernameField.autoPinEdge(.trailing, to: .trailing, of: viewsContainer)
+        usernameField.autoPinEdge(.top, to: .top, of: viewsContainer, withOffset: 20.0)
         usernameField.autoSetDimension(.height, toSize: 40.0)
         
         passwordField.font = defaultFont
         passwordField.placeholder = "Password"
         passwordField.isSecureTextEntry = true
         
-        passwordField.autoPinEdge(.leading, to: .leading, of: usernameField, withOffset: 0.0)
-        passwordField.autoPinEdge(.trailing, to: .trailing, of: usernameField, withOffset: 0.0)
+        passwordField.autoPinEdge(.leading, to: .leading, of: usernameField)
+        passwordField.autoPinEdge(.trailing, to: .trailing, of: usernameField)
         passwordField.autoPinEdge(.top, to: .bottom, of: usernameField, withOffset: 30.0)
         passwordField.autoSetDimension(.height, toSize: 40.0)
         
@@ -116,24 +119,26 @@ class LoginViewController: UIViewController {
             alpha: 1.0
         )
         
-        loginButton.autoPinEdge(.leading, to: .leading, of: usernameField, withOffset: 0.0)
-        loginButton.autoPinEdge(.trailing, to: .trailing, of: usernameField, withOffset: 0.0)
+        loginButton.autoPinEdge(.leading, to: .leading, of: usernameField)
+        loginButton.autoPinEdge(.trailing, to: .trailing, of: usernameField)
         loginButton.autoPinEdge(.top, to: .bottom, of: passwordField, withOffset: 40.0)
         loginButton.autoSetDimension(.height, toSize: 40.0)
         
         infoLabel.font = UIFont.init(name: "Avenir-Book", size: 15.0)
-        infoLabel.text = LoginViewController.errorMessage
+        infoLabel.text = "Incorrect username and/or password!"
+        infoLabel.textAlignment = .center
         infoLabel.isHidden = true
         infoLabel.textColor = UIColor.lightGray
         
-        infoLabel.autoAlignAxis(.vertical, toSameAxisOf: fieldsContainer)
+        infoLabel.autoPinEdge(.leading, to: .leading, of: viewsContainer)
+        infoLabel.autoPinEdge(.trailing, to: .trailing, of: viewsContainer)
         infoLabel.autoPinEdge(.top, to: .bottom, of: loginButton, withOffset: 10.0)
-        infoLabel.autoPinEdge(.bottom, to: .bottom, of: fieldsContainer, withOffset: -20.0)
+        infoLabel.autoPinEdge(.bottom, to: .bottom, of: viewsContainer, withOffset: -20.0)
         infoLabel.autoSetDimension(.height, toSize: 20.0)
     }
     
     /// Sets up keyboard observers.
-    private func setUpKeyboard() {
+    private func addKeyboardObservers() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillShow),
@@ -160,6 +165,9 @@ class LoginViewController: UIViewController {
     @objc private func keyboardWillShow(notification: NSNotification) {
         if let keyboardHeight = getKeyboardHeight(notification: notification) {
             containerCenterXConstraint.constant = -keyboardHeight / 2.0
+            UIView.animate(withDuration: 0.5) { [weak self] () in
+                self?.view.layoutIfNeeded()
+            }
         }
     }
     
@@ -173,6 +181,9 @@ class LoginViewController: UIViewController {
     */
     @objc private func keyboardWillHide(notification: NSNotification) {
         containerCenterXConstraint.constant = 0.0
+        UIView.animate(withDuration: 0.5) { [weak self] () in
+            self?.view.layoutIfNeeded()
+        }
     }
     
     /**
@@ -185,11 +196,9 @@ class LoginViewController: UIViewController {
     */
     private func getKeyboardHeight(notification: NSNotification) -> CGFloat? {
         if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
-           let keyboardRectangle = keyboardFrame.cgRectValue
-           let keyboardHeight = keyboardRectangle.height
-            
-            return keyboardHeight
+            return keyboardFrame.cgRectValue.height
         }
+        
         return nil
     }
 

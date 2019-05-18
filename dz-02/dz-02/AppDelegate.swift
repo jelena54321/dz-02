@@ -16,17 +16,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         window = UIWindow(frame: UIScreen.main.bounds)
-        // let navigationController: UINavigationController
         if UserDefaults.standard.string(forKey: "token") != nil {
-            // inicijaliziraj navigation controller s ekranom kvizeva
+            window?.rootViewController = UINavigationController(
+                rootViewController: QuizzesViewController(quizzesViewModel: QuizzesViewModel())
+            )
         } else {
-            // inicijaliziraj navigation controller s login ekranom
+            window?.rootViewController = LoginViewController()
         }
         
-        // window?.rootViewController = navigationController
-        window?.rootViewController = QuizzesViewController(viewModel: QuizzesViewModel())
         window?.makeKeyAndVisible()
-        
         return true
     }
 

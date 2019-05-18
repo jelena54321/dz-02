@@ -11,25 +11,24 @@ import Foundation
 /// Class which provides acquiring **Quiz** array from server.
 class QuizService {
     
-    /// Default quizzes URL source.
+    /// Default *string* representation of *URL* source.
     private static let urlString = "https://iosquiz.herokuapp.com/api/quizzes"
     
     /**
      Fetches **Quiz** array in *json* format.
      
      - Parameters:
-        - urlString: string representation of url source
         - onComplete: action which will be executed once fetch is finished
      */
-    func fetchQuizzes(onComplete: @escaping (([Quiz]?) -> Void)) {
+    func fetchQuizzes(onComplete: @escaping (([[Quiz]]?) -> Void)) {
         if let url = URL(string: QuizService.urlString) {
             
             let request = URLRequest(url: url)
             let dataTask = URLSession.shared.dataTask(with: request) {(data, response, error) in
-                if let unwrappedData = data {
+                if let data = data {
                     do {
                         let json = try JSONSerialization.jsonObject(
-                            with: unwrappedData,
+                            with: data,
                             options: []
                         )
                         
@@ -50,17 +49,18 @@ class QuizService {
     }
     
     /**
-     Parses provided *json* object into **Quiz** array.
+     Parses provided *json* object into array of **Quiz** arrays where all
+     **Quiz** objects are grouped by quiz category.
      
      - Parameters:
-     - json: *json* object which represents quizzes
+        - json: *json* object which represents quizzes
      
-     - Returns: a new **Quiz** array if provided data can be interpreted as
+     - Returns: a new array of **Quiz** arrays if provided data can be interpreted as
      such, otherwise *nil*.
      */
-    static func parseQuizzes(json: Any) -> [Quiz]? {
+    static func parseQuizzes(json: Any) -> [[Quiz]]? {
         if let jsonDictionary = json as? [String: Any],
-            let quizzes = jsonDictionary["quizzes"] as? [Any] {
+           let quizzes = jsonDictionary["quizzes"] as? [Any] {
             
             var quizArray = [Quiz]()
             for quiz in quizzes {
@@ -72,10 +72,28 @@ class QuizService {
                 }
             }
             
-            return quizArray
+            return QuizService.groupQuizzesByCategory(quizzes: quizArray)
         }
         
         return nil
+    }
+    
+    /**
+     Groups provided **Quiz** array into array of **Quiz** arrays where all
+     **Quiz** objects in same array share same quiz category.
+     
+     - Parameters:
+        - quizzes: **Quiz** array which whill be grouped
+     
+     - Returns: a new array of **Quiz** arrays grouped by quiz category.
+    */
+    private static func groupQuizzesByCategory(quizzes: [Quiz]) -> [[Quiz]] {
+        let categoryDictionary = Dictionary.init(
+            grouping: quizzes)
+            { (quiz) -> Category in
+                quiz.category
+            }
+        return Array(categoryDictionary.values)
     }
     
 }

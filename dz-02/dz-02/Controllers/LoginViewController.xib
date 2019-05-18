@@ -12,12 +12,12 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="LoginViewController" customModule="dz_02" customModuleProvider="target">
             <connections>
-                <outlet property="fieldsContainer" destination="4bu-44-Ahc" id="kpK-9M-lOS"/>
                 <outlet property="infoLabel" destination="RJU-qw-2U2" id="cfe-ls-1dV"/>
                 <outlet property="loginButton" destination="RzG-mT-h6K" id="QV9-Po-Mlq"/>
                 <outlet property="passwordField" destination="QcQ-qZ-qf2" id="dNc-hl-5pL"/>
                 <outlet property="usernameField" destination="Hfa-dD-G6X" id="HZK-pw-EEy"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+                <outlet property="viewsContainer" destination="4bu-44-Ahc" id="SJC-JL-M2Y"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>

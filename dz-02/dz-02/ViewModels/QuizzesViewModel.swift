@@ -9,7 +9,7 @@
 import Foundation
 
 /// Structure which is used for filling **QuizTableViewCell* with data.
-struct QuizViewModel {
+struct QuizCellViewModel {
     
     /// Quiz id.
     let id: Int
@@ -38,13 +38,13 @@ struct QuizViewModel {
 }
 
 /**
- Class which presents communication between **QuizzesViewController** and
- model.
+ Class which enables communication between model and view controllers.
+ This specific class presents quizzes.
  */
 class QuizzesViewModel {
     
-    /// Quizzes array.
-    var quizzes: [Quiz]?
+    /// Quizzes arrays.
+    private var quizzes: [[Quiz]]?
     
     /**
      Fetches quizzes from server.
@@ -59,31 +59,72 @@ class QuizzesViewModel {
         }
     }
     
-    func viewModel(atIndex index: Int) {
+    /**
+     Returns **QuizViewModel** object corresponding **Quiz** object at index path
+     provided with arguent.
+     
+     - Parameters:
+        - indexPath: for which index path is corresponding **SingleQuizViewModel** object
+     inquired
+     
+     - Returns: quiz view model presenting quiz at provided index path.
+    */
+    func quizViewModel(atIndex indexPath: IndexPath) -> QuizViewModel? {
+        guard let quizzes = quizzes else {
+            return nil
+        }
         
+        return QuizViewModel(quiz: quizzes[indexPath.section][indexPath.row])
     }
     
     /**
-     Returns **QuizViewModel** structure which corresponds **Quiz** object
-     at index specified with argument.
+     Returns **QuizCellViewModel** structure which corresponds **Quiz** object
+     at index path specified with argument.
      
      - Parameters:
-        - atIndex: at which index is quiz inquired
+        - atIndexPath: at which index path is quiz inquired
      
      - Returns: structure corresponding to internally stored **Quiz** object
      at specified position
      */
-    func quiz(atIndex index: Int) -> QuizViewModel? {
+    func quiz(atIndexPath indexPath: IndexPath) -> QuizCellViewModel? {
         guard let quizzes = self.quizzes else {
             return nil
         }
         
-        return QuizViewModel(quiz: quizzes[index])
+        return QuizCellViewModel(quiz: quizzes[indexPath.section][indexPath.row])
     }
     
-    /// Returns number of quizzes stored at internal container.
-    func numberOfQuizzes() -> Int {
+    /**
+     Returns number of quizzes associated with specified section.
+     
+     - Parameters:
+        - atIndex: for which section is number of quizzes inquired
+     
+     - Returns: number of quizzes for provided category.
+    */
+    func numberOfQuizzes(inSection section: Int) -> Int {
+        return quizzes?[section].count ?? 0
+    }
+    
+    /// Returns number of distinct categories.
+    func numberOfCategories() -> Int {
         return quizzes?.count ?? 0
+    }
+    
+    /**
+     Returns category of specified section.
+     - Parameters:
+        - atIndex: for which section is category acquired
+     
+     - Returns: category for provided section
+     */
+    func category(atIndex index: Int) -> Category? {
+        guard let quizzes = self.quizzes else {
+            return nil
+        }
+        
+        return quizzes[index].first?.category
     }
     
 }

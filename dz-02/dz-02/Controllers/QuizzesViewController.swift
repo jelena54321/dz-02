@@ -17,11 +17,13 @@ class QuizzesViewController: UIViewController {
     
     /// Table view containing quizzes.
     @IBOutlet weak var quizzesTableView: UITableView!
+    /// Table view footer.
+    var tableViewFooter: QuizzesTableViewFooter!
     
     /// Refresh control.
     var refreshControl: UIRefreshControl!
-    /// View model.
-    var viewModel: QuizzesViewModel!
+    /// Quizzes view model.
+    var quizzesViewModel: QuizzesViewModel!
     
     /**
      Initializes view controller with provided **QuizzesViewModel** object.
@@ -29,11 +31,12 @@ class QuizzesViewController: UIViewController {
      
      - Parameters:
         - viewModel: **QuizzesViewModel** object reference
+     
      - Returns: initialized **QuizzesViewController** object
     */
-    convenience init(viewModel: QuizzesViewModel) {
+    convenience init(quizzesViewModel: QuizzesViewModel) {
         self.init()
-        self.viewModel = viewModel
+        self.quizzesViewModel = quizzesViewModel
     }
     
     override func viewDidLoad() {
@@ -71,11 +74,19 @@ class QuizzesViewController: UIViewController {
             UINib(nibName: "QuizzesTableViewCell", bundle: nil),
             forCellReuseIdentifier: QuizzesViewController.cellReuseIdentifier
         )
+        
+        tableViewFooter = QuizzesTableViewFooter(
+            frame: CGRect(
+                origin: CGPoint(x: 0.0, y: 0.0),
+                size: CGSize(width: quizzesTableView.frame.width, height: 70.0)
+            )
+        )
+        quizzesTableView.tableFooterView = tableViewFooter
     }
     
-    /// Acquiring data through *viewModel* reference and updating GUI with fetched data.
+    /// Acquires data through *viewModel* reference and updates *GUI* with fetched data.
     private func bindViewModel() {
-        viewModel.fetchQuizzes {
+        quizzesViewModel.fetchQuizzes {
             self.refresh()
         }
     }
@@ -87,8 +98,28 @@ extension QuizzesViewController: UITableViewDelegate {
         return 200.0
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if let category = quizzesViewModel.category(atIndex: section) {
+            return QuizzesTableViewSectionHeader(category: category)
+        }
+        
+        return QuizzesTableViewSectionHeader()
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30.0
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        if let viewModel = quizzesViewModel.quizViewModel(atIndex: indexPath) {
+            navigationController?.pushViewController(
+                QuizViewController(quizViewModel: viewModel),
+                animated: true
+            )
+        }
     }
 }
 
@@ -100,17 +131,17 @@ extension QuizzesViewController: UITableViewDataSource {
             for: indexPath
         ) as! QuizzesTableViewCell
         
-        if let quiz = viewModel.quiz(atIndex: indexPath.row) {
+        if let quiz = quizzesViewModel.quiz(atIndexPath: indexPath) {
             cell.setUp(withQuiz: quiz)
         }
         return cell
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return quizzesViewModel.numberOfCategories()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numberOfQuizzes()
+        return quizzesViewModel.numberOfQuizzes(inSection: section)
     }
 }

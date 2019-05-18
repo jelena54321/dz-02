@@ -57,13 +57,9 @@ class QuizzesTableViewCell: UITableViewCell {
         customViewContainer.autoSetDimension(.height, toSize: 40.0)
         customViewContainer.autoSetDimension(.width, toSize: 140.0)
         
-        let levelIconsView = QuizLevelView(
-            frame: CGRect(
-                origin: CGPoint(x: 0.0, y: 0.0),
-                size: CGSize(width: 140.0, height: 40.0)
-            )
-        )
+        let levelIconsView = QuizLevelView()
         customViewContainer.addSubview(levelIconsView)
+        levelIconsView.autoPinEdgesToSuperviewEdges()
     }
     
     override func prepareForReuse() {
@@ -73,7 +69,7 @@ class QuizzesTableViewCell: UITableViewCell {
         quizTitleLabel.text = ""
         quizDescriptionLabel.text = ""
         if let levelView = customViewContainer.subviews.first as? QuizLevelView {
-            levelView.level = 0
+            levelView.level = nil
         }
     }
     
@@ -84,7 +80,7 @@ class QuizzesTableViewCell: UITableViewCell {
      - quiz: structure which presents quiz with data which will be used for
      filling this cell
      */
-    func setUp(withQuiz quiz: QuizViewModel) {
+    func setUp(withQuiz quiz: QuizCellViewModel) {
         quizTitleLabel.text = quiz.title
         quizDescriptionLabel.text = quiz.description
         if let levelView = customViewContainer.subviews.first as? QuizLevelView {

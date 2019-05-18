@@ -21,9 +21,7 @@ class QuizLevelView: UIView {
     /// Quiz level.
     var level: Int? {
         willSet {
-            if let level = newValue {
-                updateIcons(level: level)
-            }
+            updateIcons(level: newValue)
         }
     }
     
@@ -32,36 +30,29 @@ class QuizLevelView: UIView {
         setUpGUI()
     }
     
-    convenience init(frame: CGRect, level: Int) {
-        if level < 1 || level > 3 {
-            fatalError("Level value is out of legal range {0, 1, 2, 3}.")
-        }
-        self.init(frame: frame)
-        updateIcons(level: level)
-    }
-    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented.")
     }
     
     /// Sets up graphic user interface.
     private func setUpGUI() {
-        guard let image = UIImage(named: "icon40") else {
-            return
-        }
+        let image = UIImage(named: "icon40")
         
-        firstIcon = UIImageView(image: image)
+        firstIcon = UIImageView()
+        firstIcon.image = image
         self.addSubview(firstIcon)
         firstIcon.autoSetDimension(.width, toSize: 40.0)
         firstIcon.autoSetDimension(.height, toSize: 40.0)
         
-        secondIcon = UIImageView(image: image)
+        secondIcon = UIImageView()
+        secondIcon.image = image
         self.addSubview(secondIcon)
         secondIcon.autoSetDimension(.width, toSize: 40.0)
         secondIcon.autoSetDimension(.height, toSize: 40.0)
         secondIcon.autoAlignAxis(.vertical, toSameAxisOf: self)
         
-        thirdIcon = UIImageView(image: image)
+        thirdIcon = UIImageView()
+        thirdIcon.image = image
         self.addSubview(thirdIcon)
         thirdIcon.autoSetDimension(.width, toSize: 40.0)
         thirdIcon.autoSetDimension(.height, toSize: 40.0)
@@ -76,12 +67,16 @@ class QuizLevelView: UIView {
      - Parameters:
         - level: current quiz level
     */
-    private func updateIcons(level: Int) {
-        switch(level) {
-        case 0:
+    private func updateIcons(level: Int?) {
+        guard let level = level else {
             firstIcon.isHidden = true
             secondIcon.isHidden = true
             thirdIcon.isHidden = true
+            
+            return
+        }
+        
+        switch(level) {
         case 1:
             firstIcon.isHidden = false
             secondIcon.isHidden = true
